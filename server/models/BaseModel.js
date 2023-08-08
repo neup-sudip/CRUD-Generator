@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const { model, Schema } = mongoose;
 
-const schema = Schema({
+const schema = new Schema({
   ModelName: {
     type: String,
     trim: true,
@@ -17,12 +17,7 @@ const schema = Schema({
       Unique: Boolean,
       Reference: String,
       Default: String,
-      Enum: [{ type: String }],
-      SelectField: {
-        KeyField: String,
-        ValueField: String,
-      },
-      SelectLabelValue: [
+      LabelValue: [
         {
           Label: String,
           Value: String,

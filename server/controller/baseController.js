@@ -1,26 +1,47 @@
 const BaseModel = require("../models/BaseModel");
+const modelCreator = require("../utils/modelCreate");
 
 const baseController = {
   create: async (req, res) => {
-    const newModel = await BaseModel.create({
-      ...req.body,
-    })
-      .then((doc) => doc._id)
-      .catch((er) => null);
+    modelCreator(req.body);
 
-    if (!newModel) {
-      return res.json({
-        result: false,
-        message: "Error creating Model",
-        data: "",
-      });
-    }
+    // const model = await BaseModel.findOne({ ModelName: req.body.ModelName })
+    //   .then((doc) => doc)
+    //   .catch(() => {
+    //     return res.json({
+    //       result: false,
+    //       message: "Error creating Model",
+    //       data: "",
+    //     });
+    //   });
 
-    return res.json({
-      result: true,
-      message: "Model Created Successfully",
-      data: newModel,
-    });
+    // if (model) {
+    //   return res.json({
+    //     result: false,
+    //     message: "Model already exist",
+    //     data: "",
+    //   });
+    // }
+
+    // const newModel = await BaseModel.create({
+    //   ...req.body,
+    // })
+    //   .then((doc) => doc._id)
+    //   .catch((er) => null);
+
+    // if (!newModel) {
+    //   return res.json({
+    //     result: false,
+    //     message: "Error creating Model",
+    //     data: "",
+    //   });
+    // }
+
+    // return res.json({
+    //   result: true,
+    //   message: "Model Created Successfully",
+    //   data: newModel,
+    // });
   },
 
   getAll: async (req, res) => {

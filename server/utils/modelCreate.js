@@ -1,32 +1,8 @@
 const mongoose = require("mongoose");
-const { Schema, model, models } = mongoose;
+const fs = require("fs");
+const path = require("path");
 
-const test = {
-  ModelName: "Product",
-  Fields: [
-    {
-      FieldName: "Title",
-      Type: "String",
-      UIType: "Input",
-      Required: true,
-      Unique: true,
-      Reference: "",
-      Default: "Test Title",
-      UseLabelValue: false,
-      LabelValue: [Array],
-    },
-    {
-      FieldName: "Status",
-      Type: "Boolean",
-      UIType: "Switch",
-      Required: false,
-      Unique: false,
-      Reference: "",
-      Default: "",
-      LabelValue: [Array],
-    },
-  ],
-};
+const { Schema, model, models } = mongoose;
 
 const modelCreator = async (modelStruct) => {
   let obj = {};
@@ -49,11 +25,30 @@ const modelCreator = async (modelStruct) => {
 
   console.log(obj);
 
+  const writeObj = `
+  const mongoose = require("mongoose"); \n 
+  const { model, Schema, models } = mongoose;\n
+  const schema = new Schema(\n${JSON.stringify(obj)})\n
+  const ${moduleName} = models.${moduleName} || model("${moduleName}", schema, "${moduleName}");\n
+  module.exports = ${moduleName};
+  `;
+
+  // console.log(writeObj);
+
+  const pathhh = path.join(
+    __dirname.replace("utils", "models"),
+    `${moduleName}.js`
+  );
+
+  if (!fs.existsSync(pathhh)) {
+    const controllerFile = fs.writeFileSync(pathhh, writeObj, (err) => {
+      if (err) throw err;
+    });
+  }
+
   const schema = new Schema(obj);
 
   const Model = models[moduleName] || model(moduleName, schema, moduleName);
-
-  console.log(Model);
 };
 
 module.exports = modelCreator;

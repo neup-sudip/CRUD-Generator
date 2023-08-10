@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const { model, Schema } = mongoose;
+const { model, models, Schema } = mongoose;
 
 const schema = new Schema({
   ModelName: {
@@ -16,17 +16,13 @@ const schema = new Schema({
       Required: Boolean,
       Unique: Boolean,
       Reference: String,
+      RefTitle: String,
       Default: String,
-      LabelValue: [
-        {
-          Label: String,
-          Value: String,
-        },
-      ],
+      LabelValue: [],
     },
   ],
 });
 
-const BaseModel = model("BaseModel", schema, "BaseModel");
+const BaseModel = models.BaseModel || model("BaseModel", schema, "BaseModel");
 
 module.exports = BaseModel;

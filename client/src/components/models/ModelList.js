@@ -28,6 +28,8 @@ const ModelList = () => {
       {models?.map((model, idx) => (
         <div key={idx}>
           <Link to={`/model/view/${model?._id}`}>{model?.ModelName}</Link>
+          <span className="ml-5">Edit</span>
+          <Link to={`/model/edit/${model?._id}`}>{model?.ModelName}</Link>
         </div>
       ))}
     </div>

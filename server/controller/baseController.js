@@ -1,47 +1,51 @@
 const BaseModel = require("../models/BaseModel");
+const controllerCreator = require("../utils/controllerCreate");
 const modelCreator = require("../utils/modelCreate");
+const routeCreator = require("../utils/routeCreate");
 
 const baseController = {
   create: async (req, res) => {
+    const model = await BaseModel.findOne({ ModelName: req.body.ModelName })
+      .then((doc) => doc)
+      .catch(() => {
+        return res.json({
+          result: false,
+          message: "Error creating Model",
+          data: "",
+        });
+      });
+
+    if (model) {
+      return res.json({
+        result: false,
+        message: "Model already exist",
+        data: "",
+      });
+    }
+
+    const newModel = await BaseModel.create({
+      ...req.body,
+    })
+      .then((doc) => doc._id)
+      .catch((er) => null);
+
+    if (!newModel) {
+      return res.json({
+        result: false,
+        message: "Error creating Model",
+        data: "",
+      });
+    }
+
     modelCreator(req.body);
+    controllerCreator(req.body.ModelName);
+    routeCreator(req.body.ModelName);
 
-    // const model = await BaseModel.findOne({ ModelName: req.body.ModelName })
-    //   .then((doc) => doc)
-    //   .catch(() => {
-    //     return res.json({
-    //       result: false,
-    //       message: "Error creating Model",
-    //       data: "",
-    //     });
-    //   });
-
-    // if (model) {
-    //   return res.json({
-    //     result: false,
-    //     message: "Model already exist",
-    //     data: "",
-    //   });
-    // }
-
-    // const newModel = await BaseModel.create({
-    //   ...req.body,
-    // })
-    //   .then((doc) => doc._id)
-    //   .catch((er) => null);
-
-    // if (!newModel) {
-    //   return res.json({
-    //     result: false,
-    //     message: "Error creating Model",
-    //     data: "",
-    //   });
-    // }
-
-    // return res.json({
-    //   result: true,
-    //   message: "Model Created Successfully",
-    //   data: newModel,
-    // });
+    return res.json({
+      result: true,
+      message: "Model Created Successfully",
+      data: newModel,
+    });
   },
 
   getAll: async (req, res) => {

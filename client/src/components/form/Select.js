@@ -1,16 +1,29 @@
 import { Field } from "formik";
 import React from "react";
 
-const Select = ({ label, options, name, formik, ...props }) => {
+const Select = ({
+  label,
+  options,
+  name,
+  formik,
+  handleSelectChange,
+  ...props
+}) => {
   return (
     <div>
       <label className="block mb-2 text-sm font-medium " htmlFor={label}>
         {label}
       </label>
 
-      <Field name={name} as="select" className="block w-full" {...props}>
+      <Field
+        name={name}
+        as="select"
+        className="block w-full"
+        onChange={(e) => handleSelectChange(formik, e)}
+        {...props}
+      >
         <option value="" disabled>
-          Select
+          choose ...
         </option>
         {options?.map((option, idx) => (
           <option key={idx} value={option?.Value}>

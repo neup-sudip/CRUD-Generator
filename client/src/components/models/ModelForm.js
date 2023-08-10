@@ -1,11 +1,10 @@
-import React, { useState } from "react";
-import { FieldArray, Form, Formik } from "formik";
+import React, { useEffect, useState } from "react";
+import { Form, Formik } from "formik";
 import Input from "../form/Input";
-import Select from "../form/Select";
-import Switch from "../form/Switch";
 import Button from "../form/Button";
+import ModelFieldArray from "./FieldArray";
 
-const ModelForm = () => {
+const ModelForm = ({ editData }) => {
   const initial = {
     ModelName: "",
     Fields: [
@@ -16,8 +15,8 @@ const ModelForm = () => {
         Required: false,
         Unique: false,
         Reference: "",
+        RefTitle: "",
         Default: "",
-        UseLabelValue: false,
         LabelValue: [
           {
             Label: "",
@@ -29,22 +28,69 @@ const ModelForm = () => {
   };
 
   const [form, setForm] = useState(initial);
+  const [modelList, setModelList] = useState([]);
+  const [refOpt, setRefOpt] = useState([]);
+  const [fieldOpt, setFieldOpt] = useState([]);
 
-  const typeOptions = [
-    { Label: "String", Value: "String" },
-    { Label: "Number", Value: "Number" },
-    { Label: "Boolean", Value: "Boolean" },
-  ];
-  const uiOptions = [
-    { Label: "CheckBox", Value: "CheckBox" },
-    { Label: "DatePick", Value: "DatePick" },
-    { Label: "Input", Value: "Input" },
-    { Label: "RadioButton", Value: "RadioButton" },
-    { Label: "Select", Value: "Select" },
-    { Label: "Switch", Value: "Switch" },
-  ];
+  const getModels = async () => {
+    const res = await fetch("http://localhost:5000/api/model/list", {
+      method: "GET",
+    })
+      .then((resdata) => resdata)
+      .catch((err) => console.log(err));
 
-  const refOptions = [{ Label: "Test", Value: "Test" }];
+    const { data, result } = await res.json();
+
+    if (result) {
+      setModelList(data);
+      setRefOpt(
+        data?.map((model) => ({
+          Label: model?.ModelName,
+          Value: model?.ModelName,
+        }))
+      );
+    }
+  };
+
+  useEffect(() => {
+    getModels();
+  }, []);
+
+  useEffect(() => {
+    if (editData) {
+      editData?.Fields?.forEach((item, i) => {
+        item?.Reference && getRefField(i, item?.Reference);
+      });
+      setForm((prev) => ({ ...prev, ...editData }));
+    }
+    // eslint-disable-next-line
+  }, [editData]);
+
+  const getRefField = (idx, value) => {
+    const model = modelList?.find((item) => item?.ModelName === value);
+
+    const mFieldOpt = model?.Fields?.map((field) => ({
+      Label: field?.FieldName,
+      Value: field?.FieldName,
+    }));
+
+    setFieldOpt((prev) => [
+      ...prev?.filter((item) => item?.idx !== idx),
+      { idx: idx, opt: mFieldOpt },
+    ]);
+  };
+
+  const handleSelectChange = (formik, e) => {
+    const { name, value } = e.target;
+    formik.setFieldValue(name, value);
+
+    if (name?.includes("Reference")) {
+      const fId = name?.indexOf(".") + 1;
+      const lId = name?.lastIndexOf(".");
+      const idx = Number(name?.slice(fId, lId));
+      getRefField(idx, value);
+    }
+  };
 
   const handleSubmit = async (values, actions) => {
     const res = await fetch("http://localhost:5000/api/model/", {
@@ -77,97 +123,12 @@ const ModelForm = () => {
               formik={formik}
             />
 
-            <FieldArray name="Fields">
-              {({ remove, push }) => (
-                <>
-                  <div>
-                    {formik.values.Fields?.length > 0 &&
-                      formik.values.Fields.map((index, i) => (
-                        <div key={`field-${i}`}>
-                          <div key={i}>
-                            <div className="flex gap-1">
-                              <Input
-                                label="Field Name"
-                                name={`Fields.${i}.FieldName`}
-                                placeholder="Field Name"
-                                formik={formik}
-                              />
-                              <Select
-                                label="Type"
-                                name={`Fields.${i}.Type`}
-                                options={typeOptions}
-                                formik={formik}
-                              />
-                              <Select
-                                label="UI Type"
-                                name={`Fields.${i}.UIType`}
-                                options={uiOptions}
-                                formik={formik}
-                              />
-                              <Switch
-                                label="Is Required ?"
-                                name={`Fields.${i}.Required`}
-                              />
-                              <Switch
-                                label="Is Unique ?"
-                                name={`Fields.${i}.Unique`}
-                              />
-
-                              <Select
-                                label="Field Reference"
-                                name={`Fields.${i}.Reference`}
-                                options={refOptions}
-                                formik={formik}
-                              />
-                              <Input
-                                label="Default Value"
-                                name={`Fields.${i}.Default`}
-                                placeholder="Default Value"
-                                formik={formik}
-                              />
-
-                              <div onClick={() => remove(i)}>
-                                <Button
-                                  type="button"
-                                  label="Remove"
-                                  color="bg-red-500"
-                                  hoverColor="bg-red-600"
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    <div
-                      onClick={() =>
-                        push({
-                          FieldName: "",
-                          Type: "",
-                          UIType: "",
-                          Required: false,
-                          Unique: false,
-                          Reference: "",
-                          Default: "",
-                          LabelValue: [
-                            {
-                              Label: "",
-                              Value: "",
-                            },
-                          ],
-                        })
-                      }
-                    >
-                      <Button
-                        type="button"
-                        label="Add"
-                        color="bg-green-500"
-                        hoverColor="bg-green-600"
-                      />
-                    </div>
-                  </div>
-                </>
-              )}
-            </FieldArray>
+            <ModelFieldArray
+              formik={formik}
+              refOpt={refOpt}
+              fieldOpt={fieldOpt}
+              handleSelectChange={handleSelectChange}
+            />
 
             <Button
               type="submit"

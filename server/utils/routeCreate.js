@@ -9,7 +9,7 @@ const routeManager = (baseName) => {
 
   const modifiedContent = content.replace(
     "module.exports = router;",
-    `const ${route} = require("./${route}");\nrouter.use("/${baseName}", ${route});\nmodule.exports = router;`
+    `const ${route} = require("./${route}");\nrouter.use("/${baseName}", ${route});\n\nmodule.exports = router;`
   );
 
   fs.writeFileSync(filePath, modifiedContent, "utf8");
